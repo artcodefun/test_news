@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:test_news_app/models/News.dart';
+import 'package:test_news_app/services/FileHandler.dart';
+import 'package:test_news_app/services/NewsRepo.dart';
 
 class NewsWidget extends StatelessWidget {
   const NewsWidget({Key? key, required this.news}) : super(key: key);
@@ -10,11 +14,19 @@ class NewsWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        Positioned.fill(
-            child: Image.network(
-          news.image,
-          fit: BoxFit.fitHeight,
-        )),
+        FutureBuilder<File?>(
+          future: FileHandler.getDownloadedPhoto(news.image),
+          builder: (context, snapshot) {
+            if(snapshot.hasData)
+            return Positioned.fill(
+                child: Image.file(
+                  snapshot.data!
+              ,
+              fit: BoxFit.fitHeight,
+            ));
+            return Container();
+          }
+        ),
         Positioned.fill(
             child: Container(
           color: Colors.black.withOpacity(0.7),

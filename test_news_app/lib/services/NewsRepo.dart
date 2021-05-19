@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 import 'package:test_news_app/models/News.dart';
+import 'package:test_news_app/services/FileHandler.dart';
 
 class NewsRepo {
   static final NewsRepo _NewsRepo = NewsRepo._internal();
@@ -28,39 +30,33 @@ class NewsRepo {
   }
 
   Future<List<News>> getNews(int count, {int? lastID}) async {
-    
     if (!ready) await initializeDefault();
 
     CollectionReference fbRef = firestore.collection("news");
-    Reference storageRef = FirebaseStorage.instance.ref("/images");
+    Reference storageRef = FirebaseStorage.instance.ref().child("images");
 
     var news = (await fbRef.get()).docs;
 
     List<News> res = [];
 
-    lastID ??= news.firstWhere((e) => e.id=="info").get("lastID");
-    count = news.length-1 < count ? news.length-1: count;
+    lastID ??= news.firstWhere((e) => e.id == "info").get("lastID");
+    count = news.length - 1 < count ? news.length - 1 : count;
 
-    for (var i =0; i<count; i++ ) {
-      var data = await fbRef.doc("${lastID!-i}").get();
+    for (var i = 0; i < count; i++) {
+      var data = await fbRef.doc("${lastID! - i}").get();
+
+      String downloadUrl = "";
+
+      downloadUrl = await storageRef.child(data.get('image')).getDownloadURL();
+      if (await FileHandler.getDownloadedPhoto(data.get("image")) == null)
+        FileHandler.downloadPhoto(data.get("image"), downloadUrl);
 
 
-      String downloadUrl ="";
-      try {
-        downloadUrl = await storageRef.child(data.get('image')).getDownloadURL();
-
-      } catch(e){
-        print("$e");
-      }
-
-      //Todo img downloads
-      
-      
       res.add(News(
-        id:  int.parse(data.id),
+          id: int.parse(data.id),
           title: data.get('title') as String,
           description: data.get('description') as String,
-          image: downloadUrl ));
+          image: data.get("image")));
     }
 
     return res;

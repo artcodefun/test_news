@@ -9,14 +9,6 @@ import 'package:test_news_app/models/News.dart';
 class DBHelper {
   static Database? _db;
 
-  static String? _photoDir;
-
-  static getDir() async {
-    _photoDir = _photoDir ??
-        (await getApplicationDocumentsDirectory()).path + "/images/";
-    return _photoDir;
-  }
-
   Future<Database> get db async {
     if (_db != null) {
       return _db!;
@@ -29,17 +21,16 @@ class DBHelper {
     Directory documentDirectory = await getApplicationDocumentsDirectory();
     String path = p.join(documentDirectory.toString() , 'news.db');
     var db = await openDatabase(path, version: 1, onCreate: _onCreate);
-    await getDir();
     return db;
   }
 
   _onCreate(Database db, int version) async {
     await db.execute(
-          'CREATE TABLE news (id INTEGER PRIMARY KEY, title TEXT, description TEXT, image TEXT,)');
+          'CREATE TABLE news (id INTEGER PRIMARY KEY, title TEXT, description TEXT, image TEXT)');
 
   }
 
-  Future<News> addFriend(News news) async {
+  Future<News> addNews(News news) async {
     var dbClient = await db;
     await dbClient.insert('news', news.toMap());
     return news;
@@ -55,7 +46,7 @@ class DBHelper {
         news.add(News.fromMap(maps[i]));
       }
     }
-    return news;
+    return news.reversed.toList();
   }
 
   Future<int> deleteNews(int id) async {
@@ -68,7 +59,8 @@ class DBHelper {
   }
 
 
-  Future<int> updateNewsFromList(List list) async {
+  Future<int> updateNewsFromList(List<News> list) async {
+
 
     var dbClient = await db;
     List<Map> maps = await dbClient
@@ -83,8 +75,9 @@ class DBHelper {
 
 
         for (var i in list) {
-      if (!maps.map((e) => e["id"]).contains(i["id"])) {
-        await addFriend(News( id: i["id"], title: i["title"], description: i["description"], image: i["image"]));
+      if (!maps.map((e) => e["id"]).contains(i.id)) {
+        print("not im maps!");
+        await addNews(News( id: i.id, title: i.title, description: i.description, image: i.image));
       }
     }
 
