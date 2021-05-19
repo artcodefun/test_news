@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "941335877048",
+    "project_id": "test-news-39c24",
+    "storage_bucket": "test-news-39c24.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:941335877048:android:bfb4ca0b522c45adad2b4d",
+        "android_client_info": {
+          "package_name": "com.artcodefun.test_news_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "941335877048-ee64suiuh07h2qja4bisl5b7qtfr15j5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCxfXiT2G6PqAyak3tArV2UvUN1MATXyMc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "941335877048-ee64suiuh07h2qja4bisl5b7qtfr15j5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
