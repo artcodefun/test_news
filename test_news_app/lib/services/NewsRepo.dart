@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -29,7 +27,7 @@ class NewsRepo {
     print('Initialized default app $app');
   }
 
-  Future<List<News>> getNews() async {
+  Future<List<News>> getNews(int count, {int? lastID}) async {
     
     if (!ready) await initializeDefault();
 
@@ -40,17 +38,17 @@ class NewsRepo {
 
     List<News> res = [];
 
-    for (var n in news) {
-      var data = await fbRef.doc(n.id).get();
+    lastID ??= news.firstWhere((e) => e.id=="info").get("lastID");
+    count = news.length-1 < count ? news.length-1: count;
 
-      //Uint8List image = (await storageRef.child(p.get("image")).getData())!;
+    for (var i =0; i<count; i++ ) {
+      var data = await fbRef.doc("${lastID!-i}").get();
 
 
-      String downloadUrl ="m";
+      String downloadUrl ="";
       try {
         downloadUrl = await storageRef.child(data.get('image')).getDownloadURL();
 
-        print(downloadUrl);
       } catch(e){
         print("$e");
       }
@@ -59,6 +57,7 @@ class NewsRepo {
       
       
       res.add(News(
+        id:  int.parse(data.id),
           title: data.get('title') as String,
           description: data.get('description') as String,
           image: downloadUrl ));
