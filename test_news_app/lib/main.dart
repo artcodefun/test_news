@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:test_news_app/components/NewsWidget.dart';
@@ -44,17 +45,22 @@ class _MyHomePageState extends State<MyHomePage> {
       RefreshController(initialRefresh: false);
 
   void _onRefresh() async {
-    // monitor network fetch
-    await Future.delayed(Duration(milliseconds: 1000));
-    // if failed,use refreshFailed()
+    var result = await controller.updateNews();
+
+    if (result == null) {
+      _refreshController.refreshFailed();
+      return;
+    }
     _refreshController.refreshCompleted();
   }
 
   void _onLoading() async {
-    // monitor network fetch
-    await Future.delayed(Duration(milliseconds: 1000));
-    // if failed,use loadFailed(),if no data return,use LoadNodata()
-    if (mounted) setState(() {});
+    var result = await controller.loadMoreNews();
+
+    if (result == null) {
+      _refreshController.loadFailed();
+      return;
+    }
     _refreshController.loadComplete();
   }
 
@@ -69,26 +75,61 @@ class _MyHomePageState extends State<MyHomePage> {
           child: SmartRefresher(
             controller: _refreshController,
             onRefresh: _onRefresh,
+            onLoading: _onLoading,
             enablePullDown: true,
-            header: WaterDropHeader( waterDropColor: Theme.of(context).primaryColor,),
-            child: FutureBuilder<List<News>>(
-                future: controller.getNews(),
+            enablePullUp: true,
+            header: WaterDropHeader(
+              waterDropColor: Theme.of(context).primaryColor,
+            ),
+            footer: CustomFooter(
+              builder: (BuildContext context, LoadStatus? mode) {
+                Widget body;
+                if (mode == LoadStatus.idle) {
+                  body = Text("pull up load");
+                } else if (mode == LoadStatus.loading) {
+                  body = CupertinoActivityIndicator();
+                } else if (mode == LoadStatus.failed) {
+                  body = Text("Load Failed!Click retry!");
+                } else if (mode == LoadStatus.canLoading) {
+                  body = Text("release to load more");
+                } else {
+                  body = Text("No more Data");
+                }
+                return Container(
+                  height: 55.0,
+                  child: Center(child: body),
+                );
+              },
+            ),
+            child: StreamBuilder<List<News>>(
+                stream: controller.stream,
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
+                    if (snapshot.data!.isEmpty)
+                      return (Center(
+                        child: Text("No news are awailiable right now"),
+                      ));
                     return SafeScroll(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: snapshot.data!
                             .map((e) => SizedBox(
-                                  height: MediaQuery.of(context).size.height ~/ 3 *1.0,
+                                  height: MediaQuery.of(context).size.height ~/
+                                      3 *
+                                      1.0,
                                   child: NewsWidget(news: e),
                                 ))
                             .toList(),
                       ),
                     );
                   }
-                  return ListView.builder(itemBuilder: (c,i)=>Container(color: Colors.black.withOpacity(0.2*(i%2)),
-                    height: MediaQuery.of(context).size.height ~/ 3 *1.0, child: Center(child: CircularProgressIndicator()), ));
+                  return ListView.builder(
+                      itemBuilder: (c, i) => Container(
+                            color: Colors.black.withOpacity(0.2 * (i % 2)),
+                            height:
+                                MediaQuery.of(context).size.height ~/ 3 * 1.0,
+                            child: Center(child: CircularProgressIndicator()),
+                          ));
                 }),
           ),
         ),

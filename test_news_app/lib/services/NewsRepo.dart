@@ -38,9 +38,11 @@ class NewsRepo {
     var news = (await fbRef.get()).docs;
 
     List<News> res = [];
+    int realLast =news.firstWhere((e) => e.id == "info").get("lastID");
 
-    lastID ??= news.firstWhere((e) => e.id == "info").get("lastID");
-    count = news.length - 1 < count ? news.length - 1 : count;
+    lastID = (lastID == null || lastID > realLast) ? realLast: (lastID<1)? 1: lastID;
+
+    count =(lastID-count  < 0)?  lastID : count;
 
     for (var i = 0; i < count; i++) {
       var data = await fbRef.doc("${lastID! - i}").get();
