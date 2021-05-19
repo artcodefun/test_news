@@ -34,7 +34,7 @@ class NewsController {
     try {
       _newsList = await Future.any([
         NewsRepo().getNews(itemsForPage),
-        Future.delayed(Duration(seconds: 10), () => null)
+        Future.delayed(Duration(seconds: 15), () => null)
       ]).then((v) async {
         if (v == null) {
           var backup = await DBHelper().getNews();
