@@ -1,4 +1,4 @@
-
+import firebase_admin
 from firebase_admin import firestore
 
 
@@ -9,7 +9,6 @@ db = firestore.client()
 newsRef = db.collection('news');
 news= newsRef.get();
 
-print(best_sellers)
 for key, value in news.items():
 	if(not (key == "info") ):
 		desc = value["description"]
